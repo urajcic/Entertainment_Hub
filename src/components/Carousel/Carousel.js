@@ -47,6 +47,8 @@ const Gallery = ({ id, media_type }) => {
   }, []);
 
   return (
+   <>
+  {credits && (
     <AliceCarousel
       mouseTracking
       infinite
@@ -57,6 +59,8 @@ const Gallery = ({ id, media_type }) => {
       autoPlay
       autoPlayInterval={2000}
     />
+    )}
+     </>
   );
 };
 

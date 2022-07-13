@@ -1,80 +1,63 @@
-import React, { useEffect, useState } from 'react'
-import Genres from '../../components/Genres/Genres';
-import CustomPagination from '../../components/Pagination/CustomPagination';
-import useGenres from '../../Hooks/useGenre';
-import axios from 'axios'
-import  SingleContent from '../../components/SingleContent/SingleContent';
-export const Series =() => {
+import axios from "axios";
+import { useEffect, useState } from "react";
+import Genres from "../../components/Genres/Genres";
+import CustomPagination from "../../components/Pagination/CustomPagination";
+import SingleContent from "../../components/SingleContent/SingleContent";
+import useGenre from "../../Hooks/useGenre";
 
-  const [content, setContent]= useState([]);
- 
-  const [page, setPage]= useState(1);
-  const [numOfPages,setNumOfPages]= useState();
+const Series = () => {
+  const [genres, setGenres] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [page, setPage] = useState(1);
+  const [content, setContent] = useState([]);
+  const [numOfPages, setNumOfPages] = useState();
+  const genreforURL = useGenre(selectedGenres);
 
-  const [selectedGenres, setSelectedGenres]= useState([]);
-  const [genres, setGenres]= useState([]);
+  const fetchSeries = async () => {
+    const { data } = await axios.get(
+      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genreforURL}`
+    );
+    setContent(data.results);
+    setNumOfPages(data.total_pages);
+    // console.log(data);
+  };
 
-  const genreforUrl= useGenres(selectedGenres);
-
-
-  const fetchSeries= async()=>{
-    // console.log(process.env.REACT_APP_API_KEY);
-    const {data}= await axios.get(`https://api.themoviedb.org/3/discover/tv?api_key=${[process.env.REACT_APP_API_KEY]}&page=${page}&with_genres=${genreforUrl}`);
-
-  
-    if(data.results){
-        setContent(data.results);
-        setNumOfPages(data.total_pages);
-    }
-   
-}
-
-
-useEffect(()=>
-{
-    // console.log("page set ", page)
-    fetchSeries()
-    console.log("page changed", page)
-
-        // eslint-disable-next-line
-},[page, genreforUrl])
-
-
- 
-
-
+  useEffect(() => {
+    window.scroll(0, 0);
+    fetchSeries();
+    // eslint-disable-next-line
+  }, [genreforURL, page]);
 
   return (
     <div>
-        <span className="pageTitle">Series</span>
-
-        <Genres type="tv" selectedGenres={selectedGenres} setSelectedGenres={setSelectedGenres} page={page} genres= {genres} setGenres={setGenres} setPage={setPage}/>
-        <div className='trending'>
-                        {
-                          
-                            content && content.map((c) => {
-
-                              
-                            return <SingleContent
-                                key={c.id}
-                                id={c.id}
-                                poster={c.poster_path}
-                                title={c.title || c.name}
-                                    date= {c.first_air_date|| c.release_date}
-                                    media_type={c.media_type}
-                                    vote_average={c.vote_average}  />;
-                            }
-                                
-                              
-                            )
-                        }
-
-        
-                </div>
-                
-                {numOfPages>1 && (<CustomPagination setPage={setPage} numOfPages={numOfPages}/>)}
+      <span className="pageTitle">Discover Series</span>
+      <Genres
+        type="tv"
+        selectedGenres={selectedGenres}
+        setSelectedGenres={setSelectedGenres}
+        genres={genres}
+        setGenres={setGenres}
+        setPage={setPage}
+      />
+      <div className="trending">
+        {content &&
+          content.map((c) => (
+            <SingleContent
+              key={c.id}
+              id={c.id}
+              poster={c.poster_path}
+              title={c.title || c.name}
+              date={c.first_air_date || c.release_date}
+              media_type="tv"
+              vote_average={c.vote_average}
+            />
+          ))}
+      </div>
+      {numOfPages > 1 && (
+        <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Series
+export default Series;
